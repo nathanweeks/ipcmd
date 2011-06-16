@@ -1,0 +1,95 @@
+ipcmd - Command-line interface to XSI (SysV) semaphores and message queues
+==========================================================================
+
+ipcmd exposes the XSI (SysV) semaphore and message queues APIs through a
+simple command-line interface, enabling scriptable interprocess communication
+and synchronization with usually no configuration required. 
+
+SUPPORTED PLATFORMS
+===================
+
+ipcmd should compile and run on any platform that supports SysV IPC. It has
+specifically been tested on Solaris 10, FreeBSD 8.2, Mac OS X 10.6, RHEL 5.4,
+and Cygwin 1.7.9-1.
+
+ipcmd currently supports only the standard XSI APIs, and not any
+vendor-specific extensions.
+
+CONTENTS
+========
+
+CHANGES   - Visible changes in the current version and previous versions
+LICENSE   - The BSD license
+Makefile  - POSIX Makefile
+README    - This file containing basic information & installation instructions
+bin/      - Destination of the ipcmd executable when building with "make"
+examples/ - Examples that illustrate the use of ipcmd
+man/      - Contains the ipcmd man page
+src/      - ipcmd source code
+test/     - Test scripts that can be run with "make check" after building ipcmd
+    
+INSTALLATION
+============
+
+1. (Optional) The default Makefile should work on a POSIX-compliant system, 
+   but it can be edited to choose a specific compiler or compiler flags.
+
+2. Issue the following commands to build and test ipcmd:
+
+    make
+    make check 
+
+3. Move the contents of the bin/ and man/ directories to a location in your
+   PATH and MANPATH, respectively.
+
+CONFIGURATION
+=============
+
+The default system limits are usually adequate for semaphores. 
+
+The default message queue limits for most current platforms prohibit messages
+larger than a few kilobytes. See your system's documentation on how to
+increase those limits.
+
+On Cygwin, Cygserver must be running (it is not by default). See:
+http://www.cygwin.com/cygwin-ug-net/using-cygserver.html
+for details.
+
+USAGE
+=====
+
+ipcmd is provided as a single executable that supports multiple subcommands.
+To get a list of supported subcommands, type:
+
+    ipcmd
+
+To get help with a specific subcommand, type:
+
+    ipcmd SUBCOMMAND -h
+
+Where SUBCOMMAND is the subcommand of interest.
+
+See the manual page, web site, and examples in the examples/ directory for
+more information.
+
+WEB SITE
+========
+
+    http://code.google.com/p/ipcmd/
+
+KNOWN ISSUES
+============
+
+Mac OS X 10.6 is unable to perform an array of more than 5 semaphore
+operations. This issue has been reported to Apple.
+
+While ipcmd should be stable enough for production use, there may some
+interface instability with respect to the semaphore interval notation used by
+"ipcmd semop" and "ipcmd semctl setall". See the TODO file for additional
+notes (suggestions are welcomed!).
+
+BUGS
+====
+
+Please report any bugs in the bug tracker at the web site, or email the
+author, Nathan Weeks (weeks at iastate dot edu).

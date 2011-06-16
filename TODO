@@ -1,0 +1,32 @@
+* Finalize interval notation for semaphore arrays. Maybe this syntax would be
+  preferred:
+    sem_num_lbound,sem_num_ubound:semop
+  or perhaps add a "stride" option; e.g.:
+    sem_num_lbound:sem_num_ubound:stride=semop
+  or maybe the whole thing should be scrapped and left up to the scripting
+  language (e.g., brace expansion with bash or ksh93)
+
+* Include more tests (particularly for message queues).
+
+* Refine error messages.
+
+* Update documentation to reflect the fact that implementations generally 
+  initialize newly-created semaphores to 0, and that this behavior will be 
+  required in the next version of POSIX:
+  
+  http://austingroupbugs.net/view.php?id=377
+
+* Add environment variable IPCMD_MSGRCV_MEMORY to cap or fix the amount of
+  memory allocated by ipcmd msgrcv (in the latter case, a call to msgctl to
+  retrieve the size of msq_qbytes wouldn't be necessary). The purpose of this
+  is to guard against the (unlikely) case that MSGMNB is large enough to cause
+  too much memory to be allocated with every "ipcmd msgrcv" (though the
+  equivalent value on Solaris 10 can be 2GB). Perhaps a similar issue that
+  could occur with "ipcmd msgsnd" should be addressed as well.
+
+* Include documentation on checking and adjusting SysV IPC limits on a few
+  common systems.
+
+* "ipcmd ftok -h" doesn't work (not sure if this could be made to work without
+  breaking functionality). Maybe the command-line usage should be accessed
+  with, e.g., "ipcmd help ftok" (a la svn and others).

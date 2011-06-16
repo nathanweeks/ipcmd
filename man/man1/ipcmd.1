@@ -1,0 +1,608 @@
+.TH ipcmd 1 "June 2011" 0.1
+.SH NAME
+ipcmd - create and manipulate XSI message queues and semaphores
+.SH SYNOPSIS
+ipcmd \fIcommand\fR [\fIoptions\fR...] [\fIoperands\fR...]
+.SH DESCRIPTION
+\fBipcmd\fR is a command-line interface to XSI message queues and semaphores
+(also known as SysV message queues and semaphores).  \fBipcmd\fR can be used
+for prototyping or debugging applications that use XSI message queues and
+semaphores, or as an interface to these facilities from programming languages
+that lack a native interface.
+.SH OPTIONS
+See \fBEXTENDED DESCRIPTION\fR for the list of options each \fIcommand\fR
+accepts.
+.SH OPERANDS
+See \fBEXTENDED DESCRIPTION\fR for the list of operands each \fIcommand\fR
+accepts.
+.SH STDIN
+\fBipcmd msgsnd\fR will read an input message from standard input if no
+\fImessage\fR argument is specified.
+.SH INPUT FILES
+None.
+.SH STDOUT
+The following commands write to standard output:
+.IP
+\fBipcmd msgrcv\fR
+.br
+\fBipcmd semctl getall\fR
+.br
+\fBipcmd semctl getcnt\fR
+.br
+\fBipcmd semctl getpid\fR
+.br
+\fBipcmd semctl getval\fR
+.br
+\fBipcmd semctl getzcnt\fR
+.br
+\fBipcmd semget\fR
+.br
+\fBipcmd msgget\fR
+.SH STDERR
+When invoked with the \fB-v\fR option, \fBipcmd msgrcv\fR will write the 
+received message type to standard error as follows:
+.IP
+\fB"%ld\\n"\fR, <\fImessage type\fR>
+.PP
+The standard error is otherwise used only for error messages.
+.SH OUTPUT FILES
+None.
+.SH ENVIRONMENT VARIABLES    
+.TP
+.B IPCMD_MSQID
+Default message queue identifier (\fImsqid\fR) for \fBipcmd msgsnd\fR and 
+\fBipcmd msgrcv\fR.
+.TP
+.B IPCMD_SEMID
+Default semaphore identifier (\fIsemid\fR) for \fBipcmd semctl\fR and \fBipcmd
+semop\fR.
+.SH EXTENDED DESCRIPTION
+The following \fIcommand\fR operands are supported:
+.TP
+\fBftok\fR [\fIpath\fR [\fIid\fR]]
+\fBipcmd ftok\fR prints an IPC key based on \fIpath\fR and \fIid\fR to 
+standard output. This IPC key can be used as the option argument to \fBipcmd
+msgget -Q\fR \fImsgkey\fR and \fBipcmd semget -S\fR \fIsemkey\fR to create 
+message queues and semaphore sets, or to retrieve the message queue identifier
+or semaphore identifier of existing message queues and semaphore sets created
+by different processes.
+
+\fIpath\fR must exist in the file system. If not specified, it defaults to
+"\fB.\fR". Since the output IPC key is typically based on the inode of
+\fIpath\fR, if \fIpath\fR is replaced between two invocations of \fBipcmd
+ftok\fR \fIpath\fR, the invocations may output different IPC keys.
+
+\fIid\fR must be an integer between 1 and 255. If not specified, it defaults
+to \fB1\fR.
+.TP
+\fBmsgget\fR [\fB-Q\fR \fImsgkey\fR [-e]] [\fB-m\fR \fImode\fR]
+Create a message queue and print the message queue identifier (\fImsqid\fR) to
+standard output.
+
+If \fB-Q\fR \fImsgkey\fR is specified, the message queue will be associated
+with \fImsgkey\fR. \fImsgkey\fR is a hexadecimal value, typically generated
+by \fIipcmd ftok\fR. It is an error if a message queue associated with
+\fImsgkey\fR already exists, unless the \fB-e\fR option is specified, in which
+case the \fImsqid\fR of the existing message queue will be output, and no new
+message queue will be created. (C API: \fBmsgget(IPC_PRIVATE,...)\fR is
+used if \fB-Q\fR \fImsgkey\fR is not specified.)
+
+\fB-m\fR \fImode\fR Read/write permissions (defaults is \fB0600\fR).
+\." If an octal \fImode\fR is not specified, \fB600\fR is used.
+.TP
+\fBmsgsnd\fR [\fB-q\fR \fImsqid\fR] [\fB-t\fR \fImtype\fR] [\fB-n\fR] [\fImessage\fR...] 
+Send a message(s) to a message queue associated with a message queue
+identifier. 
+
+If \fB-q\fR \fImsqid\fR is specified, it overrides the value of the
+\fBIPCMD_MSQID\fR environment variable; if not specified, and
+\fBIPCMD_MSQID\fR has not been set, it is an error.
+
+The message will be assigned type \fImtype\fR (where \fImtype\fR is a \fBlong\fR
+integer > \fB0\fR). If \fB-t\fR \fImtype\fR is not specified, the message type 
+defaults to \fB1\fR.
+
+\fBipcmd msgsnd\fR will exit when the message(s) has be sent, unless \fB-n\fR
+is specified. (C API: \fBIPC_NOWAIT\fR), in which case \fBipcmd msgsnd\fR
+will exit with status \fB2\fR if a message cannot be sent immediately.
+
+If \fImessage\fR arguments are specified, each one is sent as a separate
+message in the specified order. If no \fImessage\fR arguments are specified,
+a single message is read from standard input.
+.TP
+\fBmsgrcv\fR [\fB-q\fR \fImsqid\fR] [\fB-t\fR \fImsgtyp\fR] [\fB-n\fR] [\fB-v\fR]
+Receive a message from a message queue and write it to standard output.  If
+\fB-q\fR \fImsqid\fR is specified, it overrides the value of the
+\fBIPCMD_MSQID\fR environment variable; if not specified, and
+\fBIPCMD_MSQID\fR has not been set, it is an error.
+
+The first message on the queue is received unless the \fB-t\fR option is
+specified, in which case the message received depends on the value of
+\fBmsgtyp\fR:
+.sp
+.in 14
+.nf
+  0   Receive the first message on the queue.
+
+> 0   Receive the first message of type \fImsgtyp\fR.
+
+< 0   Receive the first message of the lowest type <= the 
+      absolute value of \fImsgtyp\fR.
+.fi
+.sp
+\fBipcmd msgrcv\fR will suspend until a message of the requested type
+(\fImsgtyp\fR) has been received, unless \fB-n\fR is specified. (C API:
+\fBIPC_NOWAIT\fR), in which case \fBipcmd msgrcv\fR exit with status 2 if a
+message cannot be received immediately.
+
+If \fB-v\fR is specified, the received message type will be printed to
+standard error.
+.TP
+\fBsemctl\fR [\fB-s\fR \fIsemid\fR] \fIcmd\fR \fIarguments\fR
+Semaphore control operations. If \fB-s\fR \fIsemid\fR is specified, it
+overrides the value of the \fBIPCMD_SEMID\fR environment variable; if not
+specified, and \fBIPCMD_SEMID\fR has not been set, it is an error.
+
+\fIcmd\fR \fIarguments\fR is one of the following:
+.sp
+\fBgetval\fR \fIsemnum\fR  
+.in +7
+Write the value of the given semaphore (\fIsemnum\fR) in the semaphore set.
+.in -7
+.sp
+\fBsetval\fR \fIsemnum\fr \fIsemval\fR
+.in +7
+Set the value of semaphore \fIsemnum\fR to \fIsemval\fR.
+.in -7
+.sp
+\fBgetpid\fR \fIsemnum\fR 
+.in +7
+Write the process ID of the last process to perform a \fBsemop\fR on the
+semaphore \fIsemnum\fR.
+.in -7
+.sp
+\fBgetncnt\fR \fIsemnum\fR 
+.in +7
+Write the number of processes waiting for the value of \fIsemnum\fR to become
+greater than its current value.
+.in -7
+.sp
+\fBgetzcnt\fR \fIsemnum\fR 
+.in +7
+Write the number of processes waiting for the value of \fIsemnum\fR to become
+0.
+.in -7
+.sp
+\fBgetall\fR
+.in +7
+Write the value of each semaphore in the semaphore set in order. The
+semaphore values are written in order, space-separated, and on one line.
+.in -7
+
+\fBsetall\fR \fIsemval\fR
+
+\fBsetall\fR \fIsem_num_lbound\fR[:\fIsem_num_ubound\fR]=\fIsemval\fR...
+.in +7
+The first argument form sets each semaphore in the semaphore set to
+\fIsemval\fR.
+
+The second argument form assigns each \fIsemval\fR in the semaphore set from
+interval arguments of the form
+\fIsem_num_lbound\fR[:\fIsem_num_ubound\fR]=\fIsemval\fR. If specified,
+\fIsem_num_ubound\fR must be >= \fIsem_num_lbound\fR. Each \fIsem_num\fR
+between \fIsem_num_lbound\fR and \fIsem_num_ubound\fR will be set to
+\fIsemval\fR. Each \fIsem_num\fR in the semaphore set must included in
+exactly one such interval, or else an error message will be produced.
+
+Both read and alter permission on the semaphore set are required (C API: due
+to a call to \fBsemctl(...,IPC_STAT)\fR to determine the number of semaphores
+in the set).
+.in -7
+.TP
+\fBsemget\fR [\fB-S\fR \fIsemkey\fR [\fB-e\fR]] [\fB-m\fR \fImode\fR] [\fB-N\fR \fInsems\fR]
+Create a semaphore set and print the semaphore identifier (\fIsemid\fR) to
+standard output.
+
+If \fB-S\fR \fIsemkey\fR is specified, the semaphore set will be associated
+with \fIsem ey\fR.  \fIsemkey\fR is a hexadecimal value, typically generated
+by \fIipcmd ftok\fR. It is an error if a semaphore set associated with
+\fIsemkey\fR already exists, unless the \fB-e\fR option is specified, in which
+case the \fIsemid\fR of the existing semaphore set will be output, and no new
+semaphore set will be created. (C API: \fBsemget(IPC_PRIVATE,...)\fR is used
+if \fB-S\fR \fIsemkey\fR is not specified.)
+
+\fB-m\fR \fImode\fR Read/alter permissions (defaults is \fB0600\fR).
+
+If \fB-N\fR \fInsems\fR is specified, the semaphore set will contain \fInsems\fR
+semaphores; otherwise, the semaphore set will contain 1 semaphore. Semaphores
+in a set are numbered starting from 0; i.e., 0 <= \fIsem_num\fR < \fInsems\fR.
+
+.TP
+\fBsemop\fR [\fB-s\fR \fIsemid\fR] [\fB-n\fR] [\fB-u\fR] \fIsem_op\fR [\fB:\fR \fIcommand\fR [\fIargument\fR...]]
+.TP
+.nf
+\fBsemop\fR [\fB-s\fR \fIsemid\fR] [\fB-n\fR] [\fB-u\fR] \fIsem_num_lbound\fR[:\fIsem_num_ubound\fR]=\fIsem_op\fR[\fBn\fR][\fBu\fR]... [\fB:\fR \fIcommand\fR [\fIargument\fR...]]
+.fi
+Perform an atomic array of semaphore operations on a semaphore set that has
+been created with \fBipcmd semget\fR and initialized with \fBipcmd semctl
+setval\fR or \fBipcmd semctl setall\fR.
+
+If \fB-s\fR \fIsemid\fR is specified, it overrides the value of the
+\fBIPCMD_SEMID\fR environment variable; if not specified, and
+\fBIPCMD_SEMID\fR has not been set, it is an error.
+
+\fBipcmd semop\fR will suspend until the requested array of semaphore
+operations can be performed atomically in the specified order, unless \fB-n\fR
+is specified (C API: \fBIPC_NOWAIT\fR), in which case \fBipcmd semop\fR will
+exit with status \fB2\fR without modifying the semaphore set if any operation
+cannot be performed immediately. If \fB-u\fR is specified, all semaphore
+operations will be undone when the \fBipcmd semop\fR process exits (C API:
+\fBSEM_UNDO\fR), rather than as part of the same atomic array of semaphore
+operations.
+
+If an optional \fIcommand\fR argument is specified, after the semaphore
+operations have been performed, \fBipcmd\fR  will execute (\fBexecvp\fR())
+\fIcommand\fR with any \fIargument\fRs. One use of this is in conjunction with
+semaphore operation(s) that have the \fBSEM_UNDO\fR operation flag.
+\fIcommand\fR will not be executed if the semaphore operations were not
+performed due to the use of \fBIPC_NOWAIT\fR (i.e., \fB-n\fR was specified, or
+a \fIsem_op\fR had an \fBn\fR suffix, and the semaphore operation could not be
+performed without suspending the \fBipcmd\fR process).
+
+.in +4
+\fIsem_op\fR is a \fBshort\fR integer that when 
+
+.nf
+< 0    Subtract the absolute value of \fIsem_op\fR from the 
+       semaphore value (\fIsemval\fR) of \fIsem_num\fR. If 
+       the current \fIsemval\fR is less than the absolute 
+       value of \fIsem_op\fR, wait until the operation can
+       be performed.
+
+  0    Wait for the \fIsemval\fR of \fIsem_num\fR to become \fB0\fR.
+
+> 0    Increment the \fIsemval\fR of \fIsem_num\fR by the value of
+       \fIsem_op\fR. The \fBipcmd sem_op\fR process must have
+       alter permission. A positive \fIsem_op\fR may be 
+       prefixed by a "+".
+.fi
+.in -4
+
+The first argument form applies the single \fIsem_op\fR argument to every
+semaphore in the set. Both read and alter permission on the semaphore set are
+required (C API: due to a call to \fBsemctl(...,IPC_STAT)\fR to determine
+the number of semaphores in the set).
+
+The second argument form constructs the array of semaphore operations from
+semaphore-operation intervals of the form
+\fIsem_num_lbound\fR[,\fIsem_num_ubound\fR]:\fIsem_op\fR[\fBn\fR][\fBu\fR].
+The array of
+semaphore operations will be executed atomically in the specified order (e.g.,
+\fB0:2=0 1=+2\fR will cause the process to suspend until semaphores 0, 1, and
+2 are 0, then add 2 to the \fIsemval\fR of \fIsem_num\fR 1, all in one atomic
+operation). The optional \fBn\fR suffix (C API: IPC_NOWAIT) indicates the
+operation is non-blocking (i.e., if the operation cannot be performed
+immediately, no operation will be performed, and \fBipcmd semop\fR will exit
+with status 2), while the optional \fBu\fR suffix (C API: IPC_SEMUNDO) will
+cause the specified operation to be undone when the \fBipcmd\fR process exits. 
+Note that the \fB-n\fR and \fB-u\fR options, if specified, will apply to all
+operations, regardless of whether or not the \fBn\fR and \fBu\fR suffixes were
+specified for individual operations.
+
+Only alter permission is required for the second argument form.
+
+.SH EXIT STATUS
+.TP
+0
+Successful completion.
+.TP
+1
+An error occurred.
+.TP
+2
+\fBipcmd msgsnd\fR, \fBipcmd msgrcv\fR, or \fBipcmd semop\fR was invoked with
+the \fB-n\fR (IPC_NOWAIT) option, and the operation could not be performed
+immediately, or \fBipcmd semget -S\fR \fIsemkey\fR was invoked (without the 
+\fB-e\fR option) and a semaphore set associated with \fIsemkey\fR already
+exists.
+.SH APPLICATION USAGE
+Message queues must be created (\fBipcmd msgget\fR) before use. Messages are
+sent to the queue using \fBipcmd msgsnd\fR, and received from the queue using
+\fBipcmd msgrcv\fR. Message queues are removed using \fBipcrm -q\fR
+\fImsqid\fR or \fBipcrm -Q\fR \fImsgkey\fR.
+
+Semaphore sets must be created (\fBipcmd semget\fR), then initialized
+(\fBipcmd semctl setval\fR or \fBipcmd semctl setall\fR) before use. They are
+operated on using \fBipcmd semop\fR, and are removed with \fBipcrm -s\fR
+\fIsemid\fR or \fBipcrm -S\fR \fIsemkey\fR.
+
+Existing XSI message queues and semaphores can be listed with the \fBipcs\fR
+utility, and removed with the \fBipcrm\fR utility.
+.SH BUGS
+XSI semaphores have an inherent design quirk: their creation and initialization
+require two operations (\fBsemget()\fR and \fBsemctl()\fR). Because of this,
+it is recommended that one process create (\fBipcmd semget\fR) and initialize
+(\fBipcmd semctl setall\fR or \fBipcmd semctl setval\fR) a semaphore set
+before spawning other processes that attempt to access them; the examples in
+the EXAMPLES section illustrate this.
+
+On most systems there is the possibility that \fBipcmd ftok\fR \fIpath\fR
+\fIid\fR could return the same IPC key for two different \fIpath\fR arguments.
+
+XSI shared memory is currently not supported.
+.SH EXAMPLES
+The following examples are complete shell scripts that illustrate solutions to
+selected synchronization problems using \fBipcmd\fR. Due to the high-level
+nature of semaphore arrays and message queues, all solutions were derived
+without referencing existing solutions; however, it is not claimed that any
+are original.
+.SS Dining Philosophers Problem (Dijkstra, 1965)
+.sp
+A semaphore array is used to represent chopsticks that are placed between each
+philosopher. A philosopher must grab both left and right chopsticks before
+eating.
+
+.in +4
+.nf
+# requires ksh93 or bash 2.x or greater.
+
+readonly NUM_PHILOSOPHERS=5
+readonly NUM_MEALS=3 # philosophers eat this many meals
+
+philosopher() {
+  left_chopstick=$((rank-1 < 0 ? NUM_PHILOSOPHERS-1 : rank-1))
+  right_chopstick=$rank
+  for ((meal=1 ; meal <= NUM_MEALS ; meal++))
+  do
+    echo "Philosopher $rank is hungry"
+    ipcmd semop $left_chopstick=-1 $right_chopstick=-1
+    echo "Philosopher $rank is eating meal $meal"
+    sleep $((RANDOM%3)) # eat for 0-2 seconds
+    echo "Philosopher $rank is done eating... thinking"
+    ipcmd semop $left_chopstick=+1 $right_chopstick=+1
+    sleep $((RANDOM%3)) # think for 0-2 seconds
+  done
+}
+
+# create a set of $NUM_PHILOSOPHERS semaphores
+export IPCMD_SEMID=$(ipcmd semget -N $NUM_PHILOSOPHERS)
+
+# remove the semaphore set when this script exits
+trap 'ipcrm -s $IPCMD_SEMID' EXIT 
+
+# place one chopstick between each philosopher
+ipcmd semctl setall 1
+
+# start $NUM_PHILOSOPHERS philosopher processes
+for ((rank=0 ; rank < NUM_PHILOSOPHERS ; rank++))
+do
+  philosopher &
+done
+
+# wait for background philosopher processes to terminate
+# before exiting & removing the semaphore set
+wait 
+.fi
+.in -4
+.SS Barrier
+A barrier implemented using a semaphore array containing one semaphore per
+process. Each of the four processes encounters three barriers; no process will 
+continue past a given barrier until all four processes have called the
+\fBbarrier\fR function.
+
+.in +4
+.nf
+# requires ksh93 or bash 2.x or greater.
+
+readonly NUM_PROCESSES=4
+readonly NUM_BARRIERS=3
+
+barrier() {
+  # decrement every semaphore in the semaphore set
+  ipcmd semop -1
+
+  # wait until my semaphore is 0, then reset to $NUM_PROCESSES
+  # and continue
+  ipcmd semop $rank=0 $rank=+$NUM_PROCESSES 
+}
+
+process() {
+  for ((b=0 ; b < $NUM_BARRIERS ; b=b+1))
+  do
+    sleep $((RANDOM%3)) # sleep for 0-2 seconds
+    echo "$rank: approaching barrier $b"
+    barrier
+    echo "$rank: past barrier $b"
+  done
+}
+
+# create a set of $NUM_PROCESSES semaphores
+export IPCMD_SEMID=$(ipcmd semget -N $NUM_PROCESSES)
+
+# remove the semaphore set when this process exits
+trap 'ipcrm -s $IPCMD_SEMID' EXIT 
+
+# set all semaphores in the semaphore set to $NUM_PROCESSES
+ipcmd semctl setall $NUM_PROCESSES
+
+# start $NUM_PROCESSES processes
+for ((rank=0 ; rank < NUM_PROCESSES ; rank=rank+1))
+do
+  process &
+done
+
+# wait for background processes to terminate
+# before exiting & removing the semaphore set
+wait 
+.fi
+.in -4
+.SS Cigarette Smokers Problem (Patil, 1971)
+Three smokers, each with an infinite supply of a different ingredient
+(matches, paper, and tobacco), sit at the same table as a non-smoking agent
+who has an infinite supply of all three ingredients. The agent randomly
+chooses two ingredients and places them on the table. The smoker with the
+missing ingredient grabs the two ingredients, makes (and presumably smokes) a
+cigarette, and notifies the agent when he is done. The agent then chooses
+another ingredient at random, and the process repeats.
+
+To make this implementation more user-friendly (i.e., so CTRL-C is not
+necessary to terminate it), the agent will gracefully end the program after
+serving the smokers \fBNUM_SERVES\fR times with the aid of a semaphore
+labeled \fBCLOSING_TIME\fR; when the agent is ready to quit, he sets the
+\fBCLOSING_TIME\fR semaphore to 1, places enough supplies on the table for
+each smoker to proceed in the next round, and goes home.
+
+After obtaining their missing ingredients, but before making their cigarettes,
+smoker check the \fBCLOSING_TIME\fR semaphore to see if its set; if it is,
+they exit; if not, they proceed to make and smoke their cigarettes before
+signalling the agent they are done via another semaphore operation (labeled
+\fBSMOKER_DONE\fR).
+
+.in +4
+.nf
+# requires ksh93 or bash 2.x or greater.
+
+readonly NUM_SERVES=10 # agent will serve this many times
+
+# semaphore array indexes
+readonly MATCHES=0 PAPER=1 TOBACCO=2 # supplies
+readonly SMOKER_DONE=3 # smoker is done smoking
+readonly CLOSING_TIME=4 # agent will supply no more
+
+agent() {
+  for ((serve=0 ; serve < NUM_SERVES ; serve++))
+  do
+    hasnt=$((RANDOM%3)) # choose ingredient to not supply
+    case $hasnt in
+      $MATCHES) echo "agent supplying paper & tobacco"
+                ipcmd semop $PAPER=+1 $TOBACCO=+1 ;;
+        $PAPER) echo "agent supplying matches & tobacco"
+                ipcmd semop $MATCHES=+1 $TOBACCO=+1 ;;
+      $TOBACCO) echo "agent supplying matches & paper"
+                ipcmd semop $MATCHES=+1 $PAPER=+1 ;;
+    esac
+    ipcmd semop $SMOKER_DONE=-1 # wait for smoker to grab stuff
+  done
+  echo "agent done serving..."
+  ipcmd semop $MATCHES=+2 $PAPER=+2 $TOBACCO=+2 $CLOSING_TIME=+1
+}
+
+smoker() {
+  what_i_got=$1
+  while true
+  do
+    case $what_i_got in
+      matches) ipcmd semop $PAPER=-1 $TOBACCO=-1 ;;
+      paper) ipcmd semop $MATCHES=-1 $TOBACCO=-1 ;;
+      tobacco) ipcmd semop $MATCHES=-1 $PAPER=-1 ;;
+    esac
+    if [[ $(ipcmd semctl getval $CLOSING_TIME) == 1 ]]
+    then
+      echo "smoker with $what_i_got exiting..."
+      exit
+    else
+      echo "smoker with $what_i_got rolled a cig"
+      ipcmd semop $SMOKER_DONE=+1 # let agent know
+    fi
+  done
+}
+
+# setup: Create a set of 5 semaphores
+export IPCMD_SEMID=$(ipcmd semget -N $((CLOSING_TIME+1)))
+
+# remove the semaphore set when this process exits
+trap 'ipcrm -s $IPCMD_SEMID' EXIT 
+
+# initialize semaphores to 0
+ipcmd semctl setall 0 
+
+# start processes...
+smoker matches &
+smoker paper &
+smoker tobacco &
+agent &
+
+# wait for all processes to finish before exiting
+# and removing the semaphore set
+wait
+.fi
+.in -4
+.SS Producer-Consumer
+Differing numbers of producers and consumers communicate and synchronize using
+message queues. After the producers have each produced a set number of items,
+they will exit; the controlling process will wait for the producers to exit
+before cause the graceful termination of the consumers by placing one "poison
+pill" per consumer in the message queue, then wait for the consumers to finish.
+
+.in +4
+.nf
+readonly ITEMS_PER_PRODUCER=5
+
+producer() {
+  me=$1
+  item=1
+  while [ $item -le $ITEMS_PER_PRODUCER ]
+  do
+    ipcmd msgsnd "item $item from producer $me"
+    item=$((item+1))
+  done
+}
+
+consumer() {
+  me=$1
+  while true
+  do
+    item=$(ipcmd msgrcv)
+    if [ "$item" = 'poison pill' ]
+    then
+      echo "Consumer $me consumed poison pill... exiting"
+      exit 
+    else
+      echo "Consumer $me consumed: $item"
+    fi
+  done
+}
+
+readonly PRODUCERS="A B"
+readonly CONSUMERS="1 2 3"
+
+# create a message queue
+export IPCMD_MSQID=$(ipcmd msgget)
+
+# remove the message queue when this process exits
+trap 'ipcrm -q $IPCMD_MSQID' EXIT 
+
+# spawn consumers
+for i in $CONSUMERS
+do
+  consumer $i &  
+done
+
+# spawn producers
+for i in $PRODUCERS
+do
+  producer $i &
+  producer_PIDs="$producer_pids ${!}"
+done
+
+# wait for producer processes to terminate
+wait $producer_PIDs
+
+# instruct consumer processes to terminate
+for i in $CONSUMERS
+do
+  ipcmd msgsnd 'poison pill'
+done
+
+# wait for consumers processes to terminate
+wait
+.fi
+.in -4
+.SH SEE ALSO
+\fIipcrm\fR, \fIipcs\fR, \fIftok\fR(), \fImsgget\fR(), \fImsgrcv\fR(),
+\fImsgsnd\fR(), \fIsemctl\fR(), \fIsemget\fR(), \fIUnix Network Programming
+Volume 2\fR by W. Richard Stevens, \fIThe Little Book of Semaphores\fR by
+Allen B. Downey
+.SH AUTHOR
+Nathan Weeks <weeks@iastate.edu>
+
