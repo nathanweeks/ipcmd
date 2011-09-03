@@ -27,6 +27,5 @@
 * Include documentation on checking and adjusting SysV IPC limits on a few
   common systems.
 
-* "ipcmd ftok -h" doesn't work (not sure if this could be made to work without
-  breaking functionality). Maybe the command-line usage should be accessed
-  with, e.g., "ipcmd help ftok" (a la svn and others).
+* Could add support for printing command-line usage of each subcommand with,
+  e.g., "ipcmd help ftok" (a la svn and others).

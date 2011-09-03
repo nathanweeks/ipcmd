@@ -69,8 +69,8 @@ by different processes.
 
 \fIpath\fR must exist in the file system. If not specified, it defaults to
 "\fB.\fR". Since the output IPC key is typically based on the inode of
-\fIpath\fR, if \fIpath\fR is replaced between two invocations of \fBipcmd
-ftok\fR \fIpath\fR, the invocations may output different IPC keys.
+\fIpath\fR, if \fIpath\fR is deleted and recreated between two invocations of
+\fBipcmd ftok\fR \fIpath\fR, the invocations may output different IPC keys.
 
 \fIid\fR must be an integer between 1 and 255. If not specified, it defaults
 to \fB1\fR.
@@ -82,10 +82,11 @@ standard output.
 If \fB-Q\fR \fImsgkey\fR is specified, the message queue will be associated
 with \fImsgkey\fR. \fImsgkey\fR is a hexadecimal value, typically generated
 by \fIipcmd ftok\fR. It is an error if a message queue associated with
-\fImsgkey\fR already exists, unless the \fB-e\fR option is specified, in which
-case the \fImsqid\fR of the existing message queue will be output, and no new
-message queue will be created. (C API: \fBmsgget(IPC_PRIVATE,...)\fR is
-used if \fB-Q\fR \fImsgkey\fR is not specified.)
+\fImsgkey\fR already exists, unless the \fB-e\fR option is specified (C API:
+the \fBIPC_EXCL\fR bit of \fImsgflg\fR is not set), in which case the
+\fImsqid\fR of the existing message queue will be output, and no new message
+queue will be created. (C API: \fBmsgget(IPC_PRIVATE,...)\fR is used if
+\fB-Q\fR \fImsgkey\fR is not specified.)
 
 \fB-m\fR \fImode\fR Read/write permissions (defaults is \fB0600\fR).
 \." If an octal \fImode\fR is not specified, \fB600\fR is used.
@@ -150,7 +151,7 @@ specified, and \fBIPCMD_SEMID\fR has not been set, it is an error.
 Write the value of the given semaphore (\fIsemnum\fR) in the semaphore set.
 .in -7
 .sp
-\fBsetval\fR \fIsemnum\fr \fIsemval\fR
+\fBsetval\fR \fIsemnum\fR \fIsemval\fR
 .in +7
 Set the value of semaphore \fIsemnum\fR to \fIsemval\fR.
 .in -7
@@ -204,9 +205,10 @@ Create a semaphore set and print the semaphore identifier (\fIsemid\fR) to
 standard output.
 
 If \fB-S\fR \fIsemkey\fR is specified, the semaphore set will be associated
-with \fIsem ey\fR.  \fIsemkey\fR is a hexadecimal value, typically generated
+with \fIsemkey\fR.  \fIsemkey\fR is a hexadecimal value, typically generated
 by \fIipcmd ftok\fR. It is an error if a semaphore set associated with
-\fIsemkey\fR already exists, unless the \fB-e\fR option is specified, in which
+\fIsemkey\fR already exists, unless the \fB-e\fR option is specified (C API:
+the \fBIPC_EXCL\fR bit of \fIsemflg\fR is not set), in which
 case the \fIsemid\fR of the existing semaphore set will be output, and no new
 semaphore set will be created. (C API: \fBsemget(IPC_PRIVATE,...)\fR is used
 if \fB-S\fR \fIsemkey\fR is not specified.)

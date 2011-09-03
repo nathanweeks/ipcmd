@@ -585,6 +585,7 @@ static void ipcmd_semget(int argc, char *argv[]) {
                 fprintf(stderr, "A semaphore identifier exists for the "
                     "argument key but ((semflg &IPC_CREAT) && "
                     "(semflg &IPC_EXCL)) is non-zero.\n");
+                exit(2);
                 break;
             case EINVAL:
                 fprintf(stderr, "The value of nsems is either less than or "
