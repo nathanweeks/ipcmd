@@ -287,7 +287,7 @@ operation is non-blocking (i.e., if the operation cannot be performed
 immediately, no operation will be performed, and \fBipcmd semop\fR will exit
 with status 2), while the optional \fBu\fR suffix (C API: IPC_SEMUNDO) will
 cause the specified operation to be undone when the \fBipcmd\fR process exits. 
-Note that the \fB-n\fR and \fB-u\fR options, if specified, will apply to all
+Note that the \fB-n\fR and \fB-u\fR options will apply to all
 operations, regardless of whether or not the \fBn\fR and \fBu\fR suffixes were
 specified for individual operations.
 

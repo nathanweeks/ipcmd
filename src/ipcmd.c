@@ -759,7 +759,7 @@ static void ipcmd_semctl(int argc, char *argv[]) {
     "  getzcnt SEMNUM\n"
     "  getall\n"
     "  setall  [SEMNUM_LBOUND[,SEMNUM_UBOUND]=]SEMVAL...";
-    int semid = 0;
+    int semid = -1;
     int semnum = -1; // semnum argument for some commands
     int cmd = IPC_STAT; // command that won't be supported, so it's safe to use
                         // as an "unset" value
@@ -787,7 +787,7 @@ static void ipcmd_semctl(int argc, char *argv[]) {
     if (optind == argc) // no subcommand specified
         print_usage_and_exit(usage);
 
-    if (!semid) { // -s option not used
+    if (semid == -1) { // -s option not used
         if (!getenv("IPCMD_SEMID")) { //IPCMD_SEMID environment variable not set
             fprintf(stderr, "ipcmd semctl: must either specify [-s semid] or "
                             "set IPCMD_SEMID environment variable\n");
@@ -1078,7 +1078,7 @@ static void ipcmd_semop(int argc, char *argv[]) {
     "  -s semid : semaphore identifier of an existing semaphore set\n"
     "  -n       : (IPC_NOWAIT) all operations are non-blocking\n"
     "  -u       : (SEM_UNDO) undo all nonzero operations upon exit";
-    int semid = 0;
+    int semid = -1;
     short int sem_flg = 0;
     size_t nsops;
     struct sembuf *sops;
@@ -1126,7 +1126,7 @@ process_arguments:
     if (optind == argc) // if no operands specified
         print_usage_and_exit(usage);
 
-    if (!semid) { // -s option not used
+    if (semid == -1) { // -s option not used
         if (!getenv("IPCMD_SEMID")) { //IPCMD_SEMID environment variable not set
             fprintf(stderr, "ipcmd semop: must either specify [-s semid] or "
                             "set IPCMD_SEMID environment variable\n");
