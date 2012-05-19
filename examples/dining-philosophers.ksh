@@ -1,4 +1,8 @@
-#!/bin/ksh
+#!/usr/bin/env ksh
+#
+# Implementation of Dijkstra's resource hierarchy solution to the Dining
+# Philosopher problem. Chopsticks (numbered [0-4]) are are acquired in 
+# increasing order.
 #
 # requires ksh93, bash 2.x or greater, or a similar shell
 
@@ -13,17 +17,27 @@ readonly NUM_MEALS=3 # philosophers eat this many meals
 ########################################
 
 philosopher() {
-  left_chopstick=$((rank-1 < 0 ? NUM_PHILOSOPHERS-1 : rank-1))
+  left_chopstick=$((rank == 0 ? NUM_PHILOSOPHERS-1 : rank-1))
   right_chopstick=$rank
   for ((meal=1 ; meal <= NUM_MEALS ; meal++))
   do
-    echo "Philosopher $rank is hungry... reaching for chopsticks"
-    ipcmd semop $left_chopstick=-1 $right_chopstick=-1
-    echo "Philosopher $rank is eating meal $meal"
+    if [[ $rank == $((NUM_PHILOSOPHERS-1)) ]]
+    then
+      echo "Philosopher $rank acquiring right chopstick"
+      ipcmd semop $right_chopstick=-1
+      echo "Philosopher $rank acquiring left chopstick"
+      ipcmd semop $left_chopstick=-1
+    else
+      echo "Philosopher $rank acquiring left chopstick"
+      ipcmd semop $left_chopstick=-1
+      echo "Philosopher $rank acquiring right chopstick"
+      ipcmd semop $right_chopstick=-1
+    fi
+    echo "Philosopher $rank is eating"
     sleep $((RANDOM%3)) # eat for 0-2 seconds
     echo "Philosopher $rank is done eating... thinking"
     ipcmd semop $left_chopstick=+1 $right_chopstick=+1
-    sleep $((RANDOM%3)) # eat for 0-2 seconds
+    sleep $((RANDOM%3)) # think for 0-2 seconds
   done
 }
 

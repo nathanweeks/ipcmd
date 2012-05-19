@@ -356,13 +356,24 @@ philosopher() {
   right_chopstick=$rank
   for ((meal=1 ; meal <= NUM_MEALS ; meal++))
   do
-    echo "Philosopher $rank is hungry"
-    ipcmd semop $left_chopstick=-1 $right_chopstick=-1
-    echo "Philosopher $rank is eating meal $meal"
+    if [[ $rank == $((NUM_PHILOSOPHERS-1)) ]]
+    then
+      echo "Philosopher $rank acquiring right chopstick"
+      ipcmd semop $right_chopstick=-1
+      echo "Philosopher $rank acquiring left chopstick"
+      ipcmd semop $left_chopstick=-1
+    else
+      echo "Philosopher $rank acquiring left chopstick"
+      ipcmd semop $left_chopstick=-1
+      echo "Philosopher $rank acquiring right chopstick"
+      ipcmd semop $right_chopstick=-1
+    fi
+    echo "Philosopher $rank is eating"
     sleep $((RANDOM%3)) # eat for 0-2 seconds
     echo "Philosopher $rank is done eating... thinking"
     ipcmd semop $left_chopstick=+1 $right_chopstick=+1
     sleep $((RANDOM%3)) # think for 0-2 seconds
+  done
   done
 }
 
