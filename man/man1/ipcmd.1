@@ -352,7 +352,7 @@ readonly NUM_PHILOSOPHERS=5
 readonly NUM_MEALS=3 # philosophers eat this many meals
 
 philosopher() {
-  left_chopstick=$((rank-1 < 0 ? NUM_PHILOSOPHERS-1 : rank-1))
+  left_chopstick=$((rank == 0 ? NUM_PHILOSOPHERS-1 : rank-1))
   right_chopstick=$rank
   for ((meal=1 ; meal <= NUM_MEALS ; meal++))
   do
@@ -373,7 +373,6 @@ philosopher() {
     echo "Philosopher $rank is done eating... thinking"
     ipcmd semop $left_chopstick=+1 $right_chopstick=+1
     sleep $((RANDOM%3)) # think for 0-2 seconds
-  done
   done
 }
 
