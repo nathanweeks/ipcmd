@@ -20,17 +20,20 @@ case $(uname) in
   Darwin|*BSD) SEMMSL=$(ipcs -T | awk '/semmsl/ {print $2}') 
                SEMOPM=$(ipcs -T | awk '/semopm/ {print $2}')
                # OS X 10.6 has the (reported) bug of being unable to perform
-               # an array of more than 5 semaphore operations
+               # an array of more than 5 semaphore operations, despite the
+               # value of semopm. This has been fixed in OS X 10.8 (kernel
+               # version 12.x.x).
                if [ $(uname) = Darwin ]
                then
-                 SEMOPM=$((SEMOPM > 5 ? 5 : SEMOPM)) 
+                 release=$(uname -r)
+                 SEMOPM=$((${release%%.*} < 12 ? 5 : SEMOPM))
                fi
                SEMUME=$(ipcs -T | awk '/semume/ {print $2}')
                SEMVMX=$(ipcs -T | awk '/semvmx/ {print $2}') ;;
   Linux) SEMMSL=$(cut -f 1 /proc/sys/kernel/sem) # per semget(2)
          SEMOPM=$(cut -f 3 /proc/sys/kernel/sem) # per semop(2)
-         SEMVMX=32767 ;; # per semctl(2) 
-         # Linux has no intrinsic limit for SEMUME
+         SEMVMX=32767 # per semctl(2) 
+         SEMUME=$SEMOPM ;; # Linux has no intrinsic limit for SEMUME
   SunOS) SEMMSL=$(prctl -P -n process.max-sem-nsems -t privileged $$ | 
                   awk 'NR == 2 {print $3}') # Solaris 10 or greater
          SEMOPM=$(prctl -P -n process.max-sem-ops -t privileged $$ | 
