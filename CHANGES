@@ -1,3 +1,16 @@
+0.1.1 (unreleased)
+-----
+* Fixed "ipcmd ftok" output on Cygwin, which uses 64-bit key_t
+* Handle "-s 0" option argument for ipcmd semctl/semop
+* Avoid starvation in the Dining Philosophers example by implementing
+  Dijkstra's resource hierarchy solution
+* Fixed typos in man page
+* Trust semopm value reported by "ipcs -T" for OS X >= 10.8 in semaphore
+  regression tests
+* "ipcmd semget" should exit with exit status 2 if the semaphore already 
+  exists and "-e" is not specified (per the man page); previously, it used
+  an exit status of 1
+
 0.1.0
 -----
 

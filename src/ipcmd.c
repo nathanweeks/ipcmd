@@ -202,7 +202,11 @@ static void ipcmd_ftok(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    printf("0x%x\n", key);
+#ifdef __CYGWIN__
+    printf("0x%llx\n", key); // Cygwin defines key_t as long long int
+#else
+    printf("0x%x\n", key); // naively assume other platforms use int
+#endif
 }
 
 // NOTE: may not implement msgctl, as most of its functionality overlaps with
