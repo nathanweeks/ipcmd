@@ -1,13 +1,10 @@
-#!/bin/sh
+#!/usr/bin/env sh
 # SYNOPSIS
 #     semaphores.sh
 #
 # NOTES
 #     Under Solaris 10, run this script using an at-least-POSIX shell like 
 #     /bin/bash, /bin/ksh, or /usr/xpg4/bin/sh.
-#
-# TODO
-#     * Take semume (max # of undo entries per process) into account
 
 set -o errexit
 set -o nounset
@@ -39,6 +36,7 @@ case $(uname) in
          SEMOPM=$(prctl -P -n process.max-sem-ops -t privileged $$ | 
                   awk 'NR == 2 {print $3}') # Solaris 10 or greater
          SEMVMX=65535 ;; # this seems to be the case for Solaris 10?
+         # Solaris >= 10 apparently has no tunable limit for SEMUME
       *) SEMMSL=25
          SEMOPM=25
          SEMVMX=32767 ;; # safe (?) defaults for other systems
@@ -232,6 +230,13 @@ set -o errexit
 # test 8: ipcmd semop with argument
 ########################################
 
+if [ ${SEMUME:-$SEMOPM} -lt $SEMOPM ]
+then
+  ipcrm -s $IPCMD_SEMID
+  export IPCMD_SEMID=$(ipcmd semget -N $SEMUME)
+  semid=$IPCMD_SEMID
+fi
+
 ipcmd semctl setall 2
 output1=$(ipcmd semop -u -2 : echo hey)
 for cmd in 'ipcmd semop -u -2 : echo success' \
@@ -249,4 +254,3 @@ do
     exit 1
   fi
 done
-

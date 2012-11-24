@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 # SYNOPSIS
 #     message_queues.sh
 

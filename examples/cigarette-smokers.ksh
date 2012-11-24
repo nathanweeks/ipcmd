@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/usr/bin/env ksh
 #
 # requires ksh93, bash 2.x or greater, or a similar shell
 

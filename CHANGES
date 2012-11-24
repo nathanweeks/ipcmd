@@ -1,4 +1,4 @@
-0.1.1 (unreleased)
+0.1.1
 -----
 * Fixed "ipcmd ftok" output on Cygwin, which uses 64-bit key_t
 * Handle "-s 0" option argument for ipcmd semctl/semop
