@@ -1089,7 +1089,13 @@ static void ipcmd_semop(int argc, char *argv[]) {
     int command_arg = 0; // index into argv[] of optional command argument
     int c;
 
+#ifdef __GNU_LIBRARY__
+    // disable GNU getopt() permutation of argv so any user-specified command
+    // argument(s) isn't mangled
+    while ((c = getopt(argc, argv, "+ns:u0123456789")) != -1)
+#else
     while ((c = getopt(argc, argv, "ns:u0123456789")) != -1)
+#endif
     {
         switch (c)
         {

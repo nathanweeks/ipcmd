@@ -1,3 +1,8 @@
+0.2.0 (unreleased)
+------------------
+* Fixed "ipcmd semop ... : command [argument...]" on glibc systems in cases
+  when "argument" contained an option. 
+
 0.1.1
 -----
 * Fixed "ipcmd ftok" output on Cygwin, which uses 64-bit key_t
