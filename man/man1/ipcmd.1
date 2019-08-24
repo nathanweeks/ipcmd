@@ -88,8 +88,7 @@ the \fBIPC_EXCL\fR bit of \fImsgflg\fR is not set), in which case the
 queue will be created. (C API: \fBmsgget(IPC_PRIVATE,...)\fR is used if
 \fB-Q\fR \fImsgkey\fR is not specified.)
 
-\fB-m\fR \fImode\fR Read/write permissions (defaults is \fB0600\fR).
-\." If an octal \fImode\fR is not specified, \fB600\fR is used.
+\fB-m\fR \fImode\fR Read/write permissions (default is \fB0600\fR).
 .TP
 \fBmsgsnd\fR [\fB-q\fR \fImsqid\fR] [\fB-t\fR \fImtype\fR] [\fB-n\fR] [\fImessage\fR...] 
 Send a message(s) to a message queue associated with a message queue
@@ -213,7 +212,7 @@ case the \fIsemid\fR of the existing semaphore set will be output, and no new
 semaphore set will be created. (C API: \fBsemget(IPC_PRIVATE,...)\fR is used
 if \fB-S\fR \fIsemkey\fR is not specified.)
 
-\fB-m\fR \fImode\fR Read/alter permissions (defaults is \fB0600\fR).
+\fB-m\fR \fImode\fR Read/alter permissions (default is \fB0600\fR).
 
 If \fB-N\fR \fInsems\fR is specified, the semaphore set will contain \fInsems\fR
 semaphores; otherwise, the semaphore set will contain 1 semaphore. Semaphores
@@ -339,7 +338,6 @@ nature of semaphore arrays and message queues, all solutions were derived
 without referencing existing solutions; however, it is not claimed that any
 are original.
 .SS Dining Philosophers Problem (Dijkstra, 1965)
-.sp
 A semaphore array is used to represent chopsticks that are placed between each
 philosopher. A philosopher must grab both left and right chopsticks before
 eating.
